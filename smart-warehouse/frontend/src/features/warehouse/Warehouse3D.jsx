@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text, Html, Center } from '@react-three/drei';
+import { Box, OrbitControls, Text, Html, Center } from '@react-three/drei';
 import * as THREE from 'three';
 import {
   Search,
@@ -37,8 +37,8 @@ function BinMesh({ bin, position, isSelected, isHighlighted, onClick }) {
   const color = isSelected
     ? '#FBBF24' // Glowing amber when selected
     : isHighlighted
-    ? '#EC4899' // Bright pink when searched/highlighted
-    : (STATUS_COLORS[bin.status] || '#2563EB');
+      ? '#EC4899' // Bright pink when searched/highlighted
+      : (STATUS_COLORS[bin.status] || '#2563EB');
 
   useFrame((state) => {
     if ((isSelected || isHighlighted) && meshRef.current) {
@@ -308,9 +308,8 @@ function Warehouse2DFallback({ zones, onSelectBin, selectedBinId }) {
                               key={b.id}
                               onClick={() => onSelectBin(b)}
                               title={`${b.bin_code} (${b.status})`}
-                              className={`h-5 rounded text-[9px] font-mono flex items-center justify-center font-bold transition-transform hover:scale-110 ${
-                                b.id === selectedBinId ? 'ring-2 ring-amber-400 scale-105' : ''
-                              }`}
+                              className={`h-5 rounded text-[9px] font-mono flex items-center justify-center font-bold transition-transform hover:scale-110 ${b.id === selectedBinId ? 'ring-2 ring-amber-400 scale-105' : ''
+                                }`}
                               style={{ backgroundColor: STATUS_COLORS[b.status] || '#2563EB' }}
                             >
                               L{b.level}
@@ -439,17 +438,15 @@ export default function Warehouse3D() {
           <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200">
             <button
               onClick={() => setViewMode('3D')}
-              className={`px-3 py-1 text-xs font-bold rounded transition-colors ${
-                viewMode === '3D' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`px-3 py-1 text-xs font-bold rounded transition-colors ${viewMode === '3D' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
             >
               3D View
             </button>
             <button
               onClick={() => setViewMode('2D')}
-              className={`px-3 py-1 text-xs font-bold rounded transition-colors ${
-                viewMode === '2D' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`px-3 py-1 text-xs font-bold rounded transition-colors ${viewMode === '2D' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
             >
               2D Plan
             </button>
