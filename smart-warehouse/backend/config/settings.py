@@ -76,14 +76,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Database configuration: Supabase PostgreSQL with SQLite fallback
+# Database configuration: Supabase PostgreSQL with automatic SQLite fallback
 SUPABASE_HOST = os.getenv('SUPABASE_DB_HOST', '')
 SUPABASE_NAME = os.getenv('SUPABASE_DB_NAME', 'postgres')
 SUPABASE_USER = os.getenv('SUPABASE_DB_USER', 'postgres')
 SUPABASE_PASSWORD = os.getenv('SUPABASE_DB_PASSWORD', '')
 SUPABASE_PORT = os.getenv('SUPABASE_DB_PORT', '5432')
 
+use_postgres = False
 if SUPABASE_HOST and SUPABASE_PASSWORD:
+    import socket
+    try:
+        sock = socket.create_connection((SUPABASE_HOST, int(SUPABASE_PORT)), timeout=3)
+        sock.close()
+        use_postgres = True
+    except Exception as exc:
+        print(f"⚠️ [Database Notice] Could not reach PostgreSQL at {SUPABASE_HOST}:{SUPABASE_PORT} ({exc}).")
+        print("➡️ Gracefully falling back to SQLite database.")
+
+if use_postgres:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
