@@ -188,6 +188,8 @@ export default function Dashboard() {
                   outerRadius={75}
                   paddingAngle={3}
                   dataKey="value"
+                  label={({ name, value }) => `${name}: ${value}`}
+                  labelLine={true}
                 >
                   {(data?.bin_status_breakdown || []).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
@@ -268,11 +270,10 @@ export default function Dashboard() {
                 <div key={act.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between text-xs">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        act.movement_type === 'PICK' ? 'bg-blue-100 text-blue-800' :
-                        act.movement_type === 'STOCK_IN' ? 'bg-emerald-100 text-emerald-800' :
-                        'bg-amber-100 text-amber-800'
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${act.movement_type === 'PICK' ? 'bg-blue-100 text-blue-800' :
+                          act.movement_type === 'STOCK_IN' ? 'bg-emerald-100 text-emerald-800' :
+                            'bg-amber-100 text-amber-800'
+                        }`}>
                         {act.movement_type}
                       </span>
                       <span className="font-mono font-bold text-slate-800">{act.quantity} pcs</span>
