@@ -273,7 +273,7 @@ function WarehouseScene({ zones, selectedBinId, highlightedBinId, onSelectBin, r
 // 2D Warehouse Layout Fallback
 function Warehouse2DFallback({ zones, onSelectBin, selectedBinId }) {
   return (
-    <div className="p-6 bg-slate-900 rounded-xl overflow-x-auto text-white min-h-[500px]">
+    <div className="p-6 bg-slate-900 rounded-xl text-white min-h-full">
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
         <h3 className="font-bold text-sm tracking-wide flex items-center gap-2">
           <Layers className="w-4 h-4 text-blue-400" />
@@ -465,7 +465,9 @@ export default function Warehouse3D() {
       {/* Main 3D Canvas / 2D Plan Container */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         {/* Visualizer Area */}
-        <div className="lg:col-span-3 bg-slate-950 rounded-xl overflow-hidden relative shadow-lg min-h-[580px] h-[650px] border border-slate-800">
+        <div className={`lg:col-span-3 bg-slate-950 rounded-xl relative shadow-lg border border-slate-800 ${
+          viewMode === '3D' ? 'min-h-[580px] h-[650px] overflow-hidden' : 'max-h-[800px] overflow-auto'
+        }`}>
           {/* Status Legend Overlay */}
           <div className="absolute top-4 left-4 z-10 bg-slate-900/80 backdrop-blur-md p-3 rounded-lg border border-slate-800 text-xs text-white space-y-1.5 shadow-md">
             <div className="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1">
@@ -490,9 +492,11 @@ export default function Warehouse3D() {
           </div>
 
           {/* Navigation Controls Hint */}
-          <div className="absolute bottom-4 left-4 z-10 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-400 font-mono">
-            Left Click: Rotate • Right Click: Pan • Scroll: Zoom
-          </div>
+          {viewMode === '3D' && (
+            <div className="absolute bottom-4 left-4 z-10 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-400 font-mono">
+              Left Click: Rotate • Right Click: Pan • Scroll: Zoom
+            </div>
+          )}
 
           {loading ? (
             <div className="flex items-center justify-center h-full text-slate-400 text-sm">
