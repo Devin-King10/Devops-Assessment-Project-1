@@ -272,35 +272,97 @@ function WarehouseScene({ zones, selectedBinId, highlightedBinId, onSelectBin, r
 
 // 2D Warehouse Layout Fallback
 function Warehouse2DFallback({ zones, onSelectBin, selectedBinId }) {
+  const [selectedZone, setSelectedZone] = useState('ALL');
+
+  const displayedZones = useMemo(() => {
+    if (selectedZone === 'ALL') return zones;
+    return zones.filter((z) => z.id.toString() === selectedZone.toString());
+  }, [zones, selectedZone]);
+
   return (
-    <div className="p-6 bg-slate-900 rounded-xl text-white min-h-full">
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
-        <h3 className="font-bold text-sm tracking-wide flex items-center gap-2">
-          <Layers className="w-4 h-4 text-blue-400" />
-          2D Warehouse Floor Plan Map
-        </h3>
-        <span className="text-xs text-slate-400">Click any bin to inspect inventory</span>
+    <div className="h-full flex flex-col bg-slate-900 text-white rounded-xl overflow-hidden">
+      {/* 2D Sticky Header & Filter Bar */}
+      <div className="p-4 border-b border-slate-800 bg-slate-900/95 sticky top-0 z-20 shrink-0 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-blue-400" />
+            <span className="font-bold text-sm tracking-wide">2D Warehouse Floor Plan Map</span>
+            <span className="text-xs text-slate-400">• Scroll vertically & horizontally to inspect</span>
+          </div>
+
+          {/* Zone Quick-Filter Tabs */}
+          <div className="flex flex-wrap items-center gap-1.5 bg-slate-800/80 p-1 rounded-lg border border-slate-700 text-xs">
+            <button
+              onClick={() => setSelectedZone('ALL')}
+              className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                selectedZone === 'ALL' ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              All Zones ({zones.length})
+            </button>
+            {zones.map((z) => (
+              <button
+                key={z.id}
+                onClick={() => setSelectedZone(z.id)}
+                className={`px-2.5 py-1 rounded font-medium transition-colors flex items-center gap-1.5 ${
+                  selectedZone === z.id ? 'bg-blue-600 text-white font-bold' : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: z.color_hex || '#38BDF8' }} />
+                <span>{z.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Clean Horizontal Status Legend - Never covers any racks */}
+        <div className="flex flex-wrap items-center gap-4 text-xs text-slate-300 pt-1">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status Legend:</span>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-xs bg-[#16A34A]" />
+            <span>Available (Empty)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-xs bg-[#2563EB]" />
+            <span>Occupied</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-xs bg-[#F59E0B]" />
+            <span>Low Stock (≤20%)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-xs bg-[#DC2626]" />
+            <span>Full / Blocked</span>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-8 min-w-[700px]">
-        {zones.map((zone) => (
+      {/* Scrollable Floor Plan Body */}
+      <div className="flex-1 overflow-y-auto overflow-x-auto p-4 space-y-6">
+        {displayedZones.map((zone) => (
           <div key={zone.id} className="p-4 rounded-lg bg-slate-800/60 border border-slate-700">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="w-3 h-3 rounded-full" style={{ backgroundColor: zone.color_hex }} />
-              <span className="font-bold text-xs uppercase tracking-wider">{zone.name}</span>
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-700/60">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: zone.color_hex }} />
+                <span className="font-bold text-xs uppercase tracking-wider">{zone.name}</span>
+                <span className="text-[11px] text-slate-400 font-mono">({zone.zone_type})</span>
+              </div>
+              <span className="text-[11px] text-slate-400">{zone.aisles?.length || 0} Aisles</span>
             </div>
 
-            <div className="grid grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 min-w-[750px]">
               {zone.aisles?.map((aisle) => (
                 <div key={aisle.id} className="p-2.5 rounded bg-slate-900/80 border border-slate-800">
-                  <div className="text-[11px] font-mono font-bold text-blue-400 mb-2">
-                    Aisle {aisle.aisle_code}
+                  <div className="text-[11px] font-mono font-bold text-blue-400 mb-2 flex items-center justify-between">
+                    <span>Aisle {aisle.aisle_code}</span>
+                    <span className="text-[10px] text-slate-500 font-normal">{aisle.racks?.length || 0} racks</span>
                   </div>
                   <div className="space-y-2">
                     {aisle.racks?.map((rack) => (
-                      <div key={rack.id} className="bg-slate-800/80 p-1.5 rounded border border-slate-700/60">
-                        <div className="text-[10px] text-slate-300 font-mono mb-1">
-                          {rack.rack_code}
+                      <div key={rack.id} className="bg-slate-800/80 p-2 rounded border border-slate-700/60">
+                        <div className="flex items-center justify-between text-[10px] text-slate-300 font-mono mb-1.5">
+                          <span className="font-bold text-slate-200">{rack.rack_code}</span>
+                          <span className="text-slate-400">{rack.bins?.length || 0} bins</span>
                         </div>
                         <div className="grid grid-cols-4 gap-1">
                           {rack.bins?.map((b) => (
@@ -308,8 +370,9 @@ function Warehouse2DFallback({ zones, onSelectBin, selectedBinId }) {
                               key={b.id}
                               onClick={() => onSelectBin(b)}
                               title={`${b.bin_code} (${b.status})`}
-                              className={`h-5 rounded text-[9px] font-mono flex items-center justify-center font-bold transition-transform hover:scale-110 ${b.id === selectedBinId ? 'ring-2 ring-amber-400 scale-105' : ''
-                                }`}
+                              className={`h-6 rounded text-[9px] font-mono flex items-center justify-center font-bold transition-all hover:scale-110 active:scale-95 ${
+                                b.id === selectedBinId ? 'ring-2 ring-amber-400 scale-105 z-10' : ''
+                              }`}
                               style={{ backgroundColor: STATUS_COLORS[b.status] || '#2563EB' }}
                             >
                               L{b.level}
@@ -324,6 +387,8 @@ function Warehouse2DFallback({ zones, onSelectBin, selectedBinId }) {
             </div>
           </div>
         ))}
+        {/* Generous bottom padding so bottom racks are 100% visible */}
+        <div className="h-16" />
       </div>
     </div>
   );
@@ -466,32 +531,34 @@ export default function Warehouse3D() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         {/* Visualizer Area */}
         <div className={`lg:col-span-3 bg-slate-950 rounded-xl relative shadow-lg border border-slate-800 ${
-          viewMode === '3D' ? 'min-h-[580px] h-[650px] overflow-hidden' : 'max-h-[800px] overflow-auto'
+          viewMode === '3D' ? 'min-h-[580px] h-[650px] overflow-hidden' : 'h-[750px] flex flex-col overflow-hidden'
         }`}>
-          {/* Status Legend Overlay */}
-          <div className="absolute top-4 left-4 z-10 bg-slate-900/80 backdrop-blur-md p-3 rounded-lg border border-slate-800 text-xs text-white space-y-1.5 shadow-md">
-            <div className="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1">
-              Bin Status Legend
+          {/* Status Legend Overlay - ONLY shown in 3D mode */}
+          {viewMode === '3D' && (
+            <div className="absolute top-4 left-4 z-10 bg-slate-900/80 backdrop-blur-md p-3 rounded-lg border border-slate-800 text-xs text-white space-y-1.5 shadow-md">
+              <div className="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1">
+                Bin Status Legend
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-xs bg-[#16A34A]" />
+                <span>Available (Empty)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-xs bg-[#2563EB]" />
+                <span>Occupied</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-xs bg-[#F59E0B]" />
+                <span>Low Stock (≤20%)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-xs bg-[#DC2626]" />
+                <span>Full / Blocked</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-xs bg-[#16A34A]" />
-              <span>Available (Empty)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-xs bg-[#2563EB]" />
-              <span>Occupied</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-xs bg-[#F59E0B]" />
-              <span>Low Stock (≤20%)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-xs bg-[#DC2626]" />
-              <span>Full / Blocked</span>
-            </div>
-          </div>
+          )}
 
-          {/* Navigation Controls Hint */}
+          {/* Navigation Controls Hint - ONLY shown in 3D mode */}
           {viewMode === '3D' && (
             <div className="absolute bottom-4 left-4 z-10 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-400 font-mono">
               Left Click: Rotate • Right Click: Pan • Scroll: Zoom
